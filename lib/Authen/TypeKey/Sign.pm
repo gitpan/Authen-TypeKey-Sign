@@ -13,7 +13,7 @@ use MIME::Base64 qw( encode_base64 );
 use Math::Pari;
 
 use vars qw( $VERSION );
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 sub new {
     my $class = shift;

@@ -1,15 +1,16 @@
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Authen-TypeKey-Sign
-version:      0.03
+version:      0.04
 version_from: lib/Authen/TypeKey/Sign.pm
 installdirs:  site
 requires:
-    Crypt::DSA:                    0
+    Math::Pari:                    0
+    Getopt::Long:                  2.33
+    Crypt::DSA::Key:               0
     Pod::Usage:                    0
     Crypt::DSA::Signature:         0
-    Getopt::Long:                  2.33
+    Crypt::DSA:                    0
     MIME::Base64:                  0
-    Crypt::DSA::Key:               0
 
 distribution_type: module
 generated_by: ExtUtils::MakeMaker version 6.12

@@ -1,5 +1,8 @@
 Revision history for Perl extension Authen::TypeKey::Sign.
 
+0.04 Dec 22 2004
+    - Added missing Math::Pari dependency to Makefile.PL
+
 0.03 Dec 22 2004
     - Removed ability to override timestamp and token in sign call out
       of security concerns. If not careful, an outside resources could
