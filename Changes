@@ -1,5 +1,8 @@
 Revision history for Perl extension Authen::TypeKey::Sign.
 
+0.05 Dec 23 2004
+    - Added missing Class::ErrorHandler dependency to Makefile.PL
+
 0.04 Dec 22 2004
     - Added missing Math::Pari dependency to Makefile.PL
 
