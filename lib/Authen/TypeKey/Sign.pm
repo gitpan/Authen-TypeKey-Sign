@@ -13,7 +13,7 @@ use MIME::Base64 qw( encode_base64 );
 use Math::Pari;
 
 use vars qw( $VERSION );
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 sub new {
     my $class = shift;
@@ -62,12 +62,12 @@ sub sign {
             unless ($in->can('param'));
         my %in;
         map { $in{$_} = $in->param($_) }
-            qw( name nick email ts token );
+            qw( name nick email );
         $in = \%in;
     }
     # tbd: more validation?
     $in->{nick} = substr($in->{nick},0,50);
-    $in->{ts} ||= time; # good idea?
+    $in->{ts} = time;
     if ($tk->hide_email) { 
         require Digest::SHA1;
         my $sha1 = Digest::SHA1->new;
@@ -76,10 +76,7 @@ sub sign {
     }
     my $msg = $in->{email}.'::'.$in->{name}.'::'.
         $in->{nick}.'::'.$in->{ts};
-    if ($tk->version > 1) {
-        my $token = $in->{token} || $tk->token;
-        $msg .= '::'.$token;
-    }
+    $msg .= '::'.$tk->token if ($tk->version > 1);
     my $key = $tk->key;
     my $dsa = Crypt::DSA->new;
     my $sig = $dsa->sign(Message=>$msg,Key=>$key);
@@ -163,8 +160,7 @@ Get/set the TypeKey token used when creating the original sign-in
 link. This is required to successfully validate the signature in
 TypeKey 1.1 and higher, which includes the token in the plaintext.
 
-This must be set B<before> calling C<sign> or by passing a I<token>
-element into it when invoked.
+This must be set B<before> calling C<sign>.
 
 =head2 $tk->key( [$keyfile|\%key|$dsa_key_obj] )
 
@@ -197,21 +193,19 @@ line. Keys and values are delimited by an equal sign.
  pub_key=someDSAkeyvalue
  priv_key=someDSAkeyvalue
  
-...and so on.
-
 You can use the L<typekeygen> utility script to generate this file.
 
 This must be set B<before> calling C<sign>.
 
 =back
 
-=head2 $tk->sign(\%user||$obj_can_param)
+=head2 $tk->sign(\%user|$param_object)
 
 Generates a TypeKey signature and returns a HTTP query string on
 success that can be used in its response to a TypeKey-enabled
-client. Take one required parameter of either a HASH reference or
-an object that supports a param method such as L<CGI> or
-L<Apache::Request>. The following hash keys are recognized:
+client. The method takes a required parameter of either a HASH
+reference or an object that supports a param method such as L<CGI>
+or L<Apache::Request>. The following hash keys are recognized:
 
 =over 4
 
@@ -229,21 +223,15 @@ The user's email address. Required. If C<hide_email> is set to true,
 C<sign> will automatically encode the email address as a SHA-1 hash of 
 the string C<mailto:E<lt>emailE<gt>>. 
 
-=item * ts
-
-The timestamp at which the signature was generated, expressed as seconds
-since the epoch. If this element is not included the current time is used
-by default.
-
-=item * token
-
-The site token for which this signature is being generated. If this element
-is not included the value set by the C<token> method will be used.
-
 =back
 
-If generation is unsuccessful, I<sign> will return C<undef>, and the
-error message can be found in C<$tk-E<gt>errstr>.
+Elements for I<ts> (timestamp) and I<token> will be handled by the
+C<sign> method. I<ts> will be set to the current time (seconds
+since epoch). If using TypeKey Protocol version 1.1 or higher,
+I<token> will be the value set using the C<token> method.
+
+If generation is unsuccessful, I<sign> will return C<undef>, and
+the error message can be found in C<$tk-E<gt>errstr>.
 
 =head2 $tk->version([ $version ])
 

@@ -1,5 +1,11 @@
 Revision history for Perl extension Authen::TypeKey::Sign.
 
+0.03 Dec 22 2004
+    - Removed ability to override timestamp and token in sign call out
+      of security concerns. If not careful, an outside resources could
+      exploit these values.
+    - Minor documentation fixes.
+
 0.02 Dec 22 2004
 	- Initial release into CPAN.
 	- sign method takes objects that can param. (Ben Trott)
