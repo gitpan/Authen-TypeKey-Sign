@@ -1,4 +1,4 @@
-# Copyright (c) 2004 Timothy Appnel (cpan@timaoutloud.org)
+# Copyright (c) 2004 Timothy Appnel (tima@cpan.org)
 # http://www.timaoutloud.org/
 # This code is released under the Artistic License.
 
@@ -13,7 +13,7 @@ use MIME::Base64 qw( encode_base64 );
 use Math::Pari;
 
 use vars qw( $VERSION );
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 sub new {
     my $class = shift;
@@ -94,7 +94,7 @@ sub sign {
 #--- utility methods
 
 sub stash {
-    $_[0]->{$_[1]} = $_[2] if $_[2];
+    $_[0]->{$_[1]} = $_[2] if defined $_[2];
     $_[0]->{$_[1]};
 }
 

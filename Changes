@@ -1,5 +1,9 @@
 Revision history for Perl extension Authen::TypeKey::Sign.
 
+0.06 Jan 25 2004
+    - Fixed stash method which was causing hide_email(0) calls to be 
+      ignored. (Brian Cassidy)
+
 0.05 Dec 23 2004
     - Added missing Class::ErrorHandler dependency to Makefile.PL
 
