@@ -1,0 +1,8 @@
+Changes
+MANIFEST
+README
+Makefile.PL
+lib/Authen/TypeKey/Sign.pm
+bin/typekeygen
+test.pl
+META.yml                                Module meta-data (added by MakeMaker)

@@ -1,0 +1,9 @@
+Revision history for Perl extension Authen::TypeKey::Sign.
+
+0.02 Dec 22 2004
+	- Initial release into CPAN.
+	- sign method takes objects that can param. (Ben Trott)
+	- Improved performance through mp2bin and Math::Pari. (Ben Trott)
+
+0.01 Dec 21 2004
+	- Private release. 
