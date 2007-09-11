@@ -13,82 +13,84 @@ use MIME::Base64 qw( encode_base64 );
 use Math::Pari;
 
 use vars qw( $VERSION );
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 sub new {
     my $class = shift;
-    my $tk = bless { }, $class;
+    my $tk = bless {}, $class;
     $tk->hide_email(1);
     $tk->version(1.1);
     $tk->token('');
     $tk;
 }
 
-sub hide_email { shift->stash('hide_email',@_) };
-sub version { shift->stash('version',@_) };
-sub token { shift->stash('token',@_) };
+sub hide_email { shift->stash('hide_email', @_) }
+sub version    { shift->stash('version',    @_) }
+sub token      { shift->stash('token',      @_) }
 
 sub key {
-    my($tk,$in)=@_;
+    my ($tk, $in) = @_;
     return $tk->stash('key') if $tk->stash('key');
     my $key;
-    unless (ref($in)) { # read from file
+    unless (ref($in)) {    # read from file
         open my $fh, $in
-            or return $tk->error("Can't open $in: $!");
+          or return $tk->error("Can't open $in: $!");
         my $data = do { local $/; <$fh> };
         close $fh;
         $key = Crypt::DSA::Key->new;
         for my $f (split /\s+/, $data) {
-            my($k, $v) = split /=/, $f, 2;
+            my ($k, $v) = split /=/, $f, 2;
             $key->$k($v);
         }
     } else {
-        if (ref($in) eq 'HASH') { # from hash
+        if (ref($in) eq 'HASH') {    # from hash
             $key = Crypt::DSA::Key->new();
             map { $key->$_($in->{$_}) } keys %$in;
         } elsif (ref($key) ne 'Crypt::DSA::Key') {
-            return $tk->error(ref($key).' is unsupported by '.
-                'the key method.');
-        } else { $key = $in } # is DSA key
+            return $tk->error(
+                         ref($key) . ' is unsupported by ' . 'the key method.');
+        } else {
+            $key = $in;
+        }    # is DSA key
     }
-    $tk->stash('key',$key);
-    $key
+    $tk->stash('key', $key);
+    $key;
 }
 
 sub sign {
-    my($tk,$in) = @_;
+    my ($tk, $in) = @_;
     if (ref($in) ne 'HASH') {
-        return $tk->error(ref($in).' cannot param.') 
-            unless ($in->can('param'));
+        return $tk->error(ref($in) . ' cannot param.')
+          unless ($in->can('param'));
         my %in;
-        map { $in{$_} = $in->param($_) }
-            qw( name nick email );
+        map { $in{$_} = $in->param($_) } qw( name nick email );
         $in = \%in;
     }
+
     # tbd: more validation?
-    $in->{nick} = substr($in->{nick},0,50);
+    $in->{nick} = substr($in->{nick}, 0, 50);
     $in->{ts} = time;
-    if ($tk->hide_email) { 
+    if ($tk->hide_email) {
         require Digest::SHA1;
         my $sha1 = Digest::SHA1->new;
-        $sha1->add('mailto:'.$in->{email});
-        $in->{email} = $sha1->hexdigest(); 
+        $sha1->add('mailto:' . $in->{email});
+        $in->{email} = $sha1->hexdigest();
     }
-    my $msg = $in->{email}.'::'.$in->{name}.'::'.
-        $in->{nick}.'::'.$in->{ts};
-    $msg .= '::'.$tk->token if ($tk->version > 1);
+    my $msg =
+      $in->{email} . '::' . $in->{name} . '::' . $in->{nick} . '::' . $in->{ts};
+    $msg .= '::' . $tk->token if ($tk->version > 1);
     my $key = $tk->key;
     my $dsa = Crypt::DSA->new;
-    my $sig = $dsa->sign(Message=>$msg,Key=>$key);
+    my $sig = $dsa->sign(Message => $msg, Key => $key);
     require MIME::Base64;
-    my $r = MIME::Base64::encode_base64(mp2bin($sig->r()),'');                   
-    my $s = MIME::Base64::encode_base64(mp2bin($sig->s()),'');
+    my $r = MIME::Base64::encode_base64(mp2bin($sig->r()), '');
+    my $s = MIME::Base64::encode_base64(mp2bin($sig->s()), '');
     $in->{sig} = "$r:$s";
-    my @qs = map { "$_=".encode_url($in->{$_}||'') } qw( name nick );
-    push(@qs, map { "$_=".$in->{$_} } 
-        grep { defined($in->{$_}) } 
-            qw( email ts token sig ));            
-    join('&',@qs);
+    my @qs = map { "$_=" . encode_url($in->{$_} || '') } qw( name nick );
+    push(@qs,
+         map    { "$_=" . encode_url($in->{$_}) }
+           grep { defined($in->{$_}) } qw( email ts token sig ));
+    join('&', @qs);
 }
 
 #--- utility methods
@@ -99,19 +101,20 @@ sub stash {
 }
 
 sub mp2bin {
-    my($p) = @_;
+    my ($p) = @_;
     $p = PARI($p);
-    my $base = PARI(1) << PARI(4*8);
-    my $res = '';
+    my $base = PARI(1) << PARI(4 * 8);
+    my $res  = '';
     while ($p != 0) {
         my $r = $p % $base;
-        $p = ($p-$r) / $base;
+        $p = ($p - $r) / $base;
         my $buf = pack 'N', $r;
         if ($p == 0) {
-            $buf = $r >= 16777216 ? $buf :
-                   $r >= 65536 ? substr($buf, -3, 3) :
-                   $r >= 256   ? substr($buf, -2, 2) :
-                                 substr($buf, -1, 1);
+            $buf =
+                $r >= 16777216 ? $buf
+              : $r >= 65536 ? substr($buf, -3, 3)
+              : $r >= 256   ? substr($buf, -2, 2)
+              : substr($buf, -1, 1);
         }
         $res = $buf . $res;
     }

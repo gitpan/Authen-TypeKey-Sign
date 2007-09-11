@@ -1,5 +1,9 @@
 Revision history for Perl extension Authen::TypeKey::Sign.
 
+0.07 Sep 11 2007
+    - Fixed sign method encoding to handle = properly. (Brian Cassidy)
+    - Code tidying
+ 
 0.06 Jan 25 2004
     - Fixed stash method which was causing hide_email(0) calls to be 
       ignored. (Brian Cassidy)
